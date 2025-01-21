@@ -17,16 +17,12 @@
       margin-bottom: 8px;
       font-weight: 500;
     }
-    input, textarea, select {
+    input, select {
       width: 100%;
       padding: 8px;
       border: 1px solid #ccc;
       border-radius: 4px;
       box-sizing: border-box;
-    }
-    textarea {
-      height: 100px;
-      resize: vertical;
     }
     button {
       background: #2196F3;
@@ -35,15 +31,10 @@
       padding: 8px 16px;
       border-radius: 4px;
       cursor: pointer;
+      width: 100%;
     }
     button:hover {
       background: #1976D2;
-    }
-    button.secondary {
-      background: #757575;
-    }
-    button.secondary:hover {
-      background: #616161;
     }
     .status {
       margin-top: 8px;
@@ -69,48 +60,11 @@
     .tab-content.active {
       display: block;
     }
-    .history-item {
-      padding: 8px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      margin-bottom: 8px;
-    }
-    .history-term {
-      font-weight: 500;
-      margin-bottom: 4px;
-    }
-    .history-definition {
-      font-size: 0.9em;
-      color: #666;
-    }
-    .history-meta {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 4px;
-      font-size: 0.8em;
-      color: #999;
-    }
-    .favorite-btn {
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 4px;
-      color: #666;
-    }
-    .favorite-btn.active {
-      color: #FFD700;
-    }
-    .button-group {
-      display: flex;
-      gap: 8px;
-    }
   </style>
 </head>
 <body>
   <div class="tabs">
     <div class="tab active" data-tab="settings">Settings</div>
-    <div class="tab" data-tab="history">History</div>
     <div class="tab" data-tab="appearance">Appearance</div>
   </div>
   
@@ -127,19 +81,8 @@
         <option value="pt">Português</option>
       </select>
     </div>
-    <div class="form-group">
-      <label for="systemPrompt">System Prompt:</label>
-      <textarea id="systemPrompt"></textarea>
-    </div>
-    <div class="button-group">
-      <button id="saveSettings">Save Settings</button>
-      <button id="restorePrompt" class="secondary">Restore Default Prompt</button>
-    </div>
+    <button id="saveSettings">Save Settings</button>
     <div id="settingsStatus" class="status"></div>
-  </div>
-  
-  <div id="history" class="tab-content">
-    <div id="historyList"></div>
   </div>
   
   <div id="appearance" class="tab-content">
