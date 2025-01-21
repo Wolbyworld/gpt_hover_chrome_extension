@@ -46,6 +46,7 @@ function createPopover() {
   input.type = 'text';
   input.className = 'gpt-prompt-input';
   input.placeholder = 'Ask anything about the selected text...';
+  input.style.color = '#000000'; // Force black text color
   
   // Prevent selection clear on focus
   input.addEventListener('focus', (e) => {
