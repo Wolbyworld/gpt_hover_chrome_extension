@@ -47,6 +47,22 @@ function createPopover() {
   input.className = 'gpt-prompt-input';
   input.placeholder = 'Ask anything about the selected text...';
   
+  // Prevent selection clear on focus
+  input.addEventListener('focus', (e) => {
+    e.preventDefault();
+    // Restore selection if it was cleared
+    if (currentSelection && currentSelection.range) {
+      const selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(currentSelection.range);
+    }
+  });
+  
+  // Prevent mousedown from clearing selection
+  input.addEventListener('mousedown', (e) => {
+    e.stopPropagation();
+  });
+  
   // Quick actions container
   const quickActions = document.createElement('div');
   quickActions.className = 'gpt-quick-actions';
@@ -327,7 +343,13 @@ document.addEventListener('keydown', (e) => {
 document.addEventListener('mouseup', handleSelection);
 
 // Hide popover when selection changes
-document.addEventListener('mousedown', () => {
+document.addEventListener('mousedown', (e) => {
+  // Don't clear selection if clicking inside popover
+  if (popover && popover.contains(e.target)) {
+    e.stopPropagation();
+    return;
+  }
+
   if (popover) {
     popover.style.display = 'none';
     // Clear content and input

@@ -60,4 +60,4 @@ A Chrome extension that provides instant definitions, translations, and AI-power
 
 ## License
 
-MIT License 
+MIT License
