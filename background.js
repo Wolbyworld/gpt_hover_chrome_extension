@@ -41,6 +41,18 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return true;
   }
 
+  if (request.type === 'CUSTOM_PROMPT') {
+    handleCustomPrompt(request.prompt, request.text, request.context)
+      .then(result => {
+        sendResponse({ result });
+      })
+      .catch(error => {
+        const errorMessage = getErrorMessage(error);
+        sendResponse({ result: errorMessage });
+      });
+    return true;
+  }
+
   if (request.type === 'GET_TRANSLATION') {
     translateDefinition(request.text, request.targetLang)
       .then(translation => sendResponse({ translation }))
@@ -177,6 +189,46 @@ async function translateDefinition(text, targetLang) {
 
   if (!response.ok) {
     const error = new Error('Failed to translate');
+    error.status = response.status;
+    throw error;
+  }
+
+  const data = await response.json();
+  return data.choices[0].message.content.trim();
+}
+
+async function handleCustomPrompt(prompt, text, context) {
+  const { openaiApiKey } = await chrome.storage.sync.get(['openaiApiKey']);
+
+  if (!openaiApiKey) {
+    throw new Error('Please set your OpenAI API key in the extension settings');
+  }
+
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${openaiApiKey}`
+    },
+    body: JSON.stringify({
+      model: 'gpt-4o',
+      messages: [
+        {
+          role: 'system',
+          content: 'You are a helpful assistant. Provide clear and concise responses.'
+        },
+        {
+          role: 'user',
+          content: `${prompt}\n\nText: "${text}"\nContext: "${context || 'No context provided'}"`
+        }
+      ],
+      max_tokens: 150,
+      temperature: 0.3
+    })
+  });
+
+  if (!response.ok) {
+    const error = new Error('Failed to process prompt');
     error.status = response.status;
     throw error;
   }

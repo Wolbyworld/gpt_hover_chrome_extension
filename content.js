@@ -29,99 +29,136 @@ function createPopover() {
   });
   
   div.addEventListener('mouseleave', (e) => {
-    // Don't close if moving to a child element
     if (!e.relatedTarget || !div.contains(e.relatedTarget)) {
       startCloseTimer();
     }
   });
   
-  // Prevent closing when clicking inside popover
-  div.addEventListener('mousedown', (e) => {
-    e.stopPropagation();
-  });
-
-  // Prevent mouseup from triggering new selection
-  div.addEventListener('mouseup', (e) => {
-    e.stopPropagation();
-  });
+  div.addEventListener('mousedown', (e) => e.stopPropagation());
+  div.addEventListener('mouseup', (e) => e.stopPropagation());
   
-  // Add toolbar
-  const toolbar = document.createElement('div');
-  toolbar.className = 'gpt-definition-toolbar';
+  // Create input container
+  const inputContainer = document.createElement('div');
+  inputContainer.className = 'gpt-input-container';
   
-  // Add copy button
-  const copyButton = document.createElement('button');
-  copyButton.className = 'gpt-definition-tool-btn';
-  copyButton.innerHTML = '📋';
-  copyButton.title = 'Copy definition';
-  copyButton.onclick = (e) => {
+  // Create input field
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'gpt-prompt-input';
+  input.placeholder = 'Ask anything about the selected text...';
+  
+  // Quick actions container
+  const quickActions = document.createElement('div');
+  quickActions.className = 'gpt-quick-actions';
+  
+  // Define button
+  const defineBtn = document.createElement('button');
+  defineBtn.className = 'gpt-quick-action-btn';
+  defineBtn.innerHTML = '📚';
+  defineBtn.title = 'Define';
+  defineBtn.onclick = async (e) => {
     e.preventDefault();
     e.stopPropagation();
-    const content = div.querySelector('.gpt-definition-content').textContent;
-    navigator.clipboard.writeText(content);
-    copyButton.innerHTML = '✓';
-    setTimeout(() => copyButton.innerHTML = '📋', 2000);
-  };
-  
-  // Add language flags
-  const languageFlags = document.createElement('div');
-  languageFlags.className = 'gpt-definition-languages';
-  
-  const languages = {
-    en: 'EN',
-    es: 'ES',
-    pt: 'PT'
-  };
-  
-  Object.entries(languages).forEach(([lang, label]) => {
-    const button = document.createElement('button');
-    button.className = 'gpt-definition-lang-btn';
-    button.textContent = label;
-    button.title = `Translate to ${lang.toUpperCase()}`;
-    button.onclick = async (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      const content = div.querySelector('.gpt-definition-content').textContent;
-      showLoading(div);
+    if (!currentSelection) return;
+    
+    showLoading(div);
+    const context = getContext(currentSelection);
+    
+    try {
+      const response = await chrome.runtime.sendMessage({
+        type: 'GET_DEFINITION',
+        text: currentSelection.text,
+        context: context
+      });
       
-      try {
-        const response = await chrome.runtime.sendMessage({
-          type: 'GET_TRANSLATION',
-          text: content,
-          targetLang: lang
-        });
-        
-        const contentDiv = div.querySelector('.gpt-definition-content');
-        contentDiv.textContent = response.translation;
-      } catch (error) {
-        const contentDiv = div.querySelector('.gpt-definition-content');
-        contentDiv.textContent = 'Error translating definition';
-      }
-    };
-    languageFlags.appendChild(button);
-  });
+      const contentDiv = div.querySelector('.gpt-definition-content');
+      contentDiv.textContent = response.definition;
+    } catch (error) {
+      const contentDiv = div.querySelector('.gpt-definition-content');
+      contentDiv.textContent = 'Error getting definition';
+    }
+  };
   
-  toolbar.appendChild(copyButton);
-  toolbar.appendChild(languageFlags);
+  // Translate button
+  const translateBtn = document.createElement('button');
+  translateBtn.className = 'gpt-quick-action-btn';
+  translateBtn.innerHTML = '🌐';
+  translateBtn.title = 'Translate';
+  translateBtn.onclick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    input.value = `Translate this to English: `;
+    input.focus();
+  };
   
+  // Send button
+  const sendBtn = document.createElement('button');
+  sendBtn.className = 'gpt-send-prompt-btn';
+  sendBtn.innerHTML = '↵';
+  sendBtn.title = 'Send';
+  
+  const handleSend = async () => {
+    const prompt = input.value.trim();
+    if (!prompt || !currentSelection) return;
+    
+    showLoading(div);
+    const context = getContext(currentSelection);
+    
+    try {
+      const response = await chrome.runtime.sendMessage({
+        type: 'CUSTOM_PROMPT',
+        prompt: prompt,
+        text: currentSelection.text,
+        context: context
+      });
+      
+      const contentDiv = div.querySelector('.gpt-definition-content');
+      contentDiv.textContent = response.result;
+      input.value = ''; // Clear input after sending
+    } catch (error) {
+      const contentDiv = div.querySelector('.gpt-definition-content');
+      contentDiv.textContent = 'Error processing prompt';
+    }
+  };
+  
+  sendBtn.onclick = handleSend;
+  input.onkeydown = (e) => {
+    if (e.key === 'Enter') {
+      handleSend();
+    }
+  };
+  
+  // Add content div
   const contentDiv = document.createElement('div');
   contentDiv.className = 'gpt-definition-content';
   
-  div.appendChild(toolbar);
+  // Assemble quick actions
+  quickActions.appendChild(defineBtn);
+  quickActions.appendChild(translateBtn);
+  
+  // Assemble input container
+  inputContainer.appendChild(input);
+  inputContainer.appendChild(quickActions);
+  inputContainer.appendChild(sendBtn);
+  
+  // Assemble popover
+  div.appendChild(inputContainer);
   div.appendChild(contentDiv);
+  
   document.body.appendChild(div);
   return div;
 }
 
 // Get surrounding context
 function getContext(selection) {
-  const range = selection.getRangeAt(0);
-  const container = range.commonAncestorContainer;
+  if (!selection || !selection.range) return '';
+  
+  const container = selection.range.commonAncestorContainer;
   
   // Get surrounding text (up to 100 characters on each side)
   const fullText = container.textContent || '';
-  const selectionStart = range.startOffset;
-  const selectionEnd = range.endOffset;
+  const selectionStart = selection.range.startOffset;
+  const selectionEnd = selection.range.endOffset;
   
   const contextBefore = fullText.substring(Math.max(0, selectionStart - 100), selectionStart);
   const contextAfter = fullText.substring(selectionEnd, Math.min(fullText.length, selectionEnd + 100));
@@ -159,6 +196,7 @@ function positionPopover(popover, x, y) {
 // Show loading animation
 function showLoading(popover) {
   const content = popover.querySelector('.gpt-definition-content');
+  content.textContent = ''; // Clear previous content
   content.innerHTML = '<div class="gpt-definition-loading"><div></div><div></div><div></div></div>';
 }
 
@@ -170,7 +208,7 @@ async function handleSelection(e) {
   if (selectedText) {
     currentSelection = {
       text: selectedText,
-      context: getContext(selection),
+      range: selection.getRangeAt(0),
       x: e.pageX,
       y: e.pageY
     };
@@ -196,31 +234,12 @@ async function handleSelection(e) {
           popover = createPopover();
         }
         
-        showLoading(popover);
+        // Clear and focus input
+        const input = popover.querySelector('.gpt-prompt-input');
+        input.value = '';
         popover.style.display = 'block';
         positionPopover(popover, currentSelection.x, currentSelection.y);
-        
-        try {
-          // Send message to background script to get definition
-          const response = await chrome.runtime.sendMessage({
-            type: 'GET_DEFINITION',
-            text: currentSelection.text,
-            context: currentSelection.context
-          });
-          
-          const content = popover.querySelector('.gpt-definition-content');
-          if (response.error) {
-            content.textContent = response.error;
-          } else if (response.definition) {
-            content.textContent = response.definition;
-          } else {
-            content.textContent = 'Unexpected response format';
-          }
-        } catch (error) {
-          console.error('Definition error:', error);
-          const content = popover.querySelector('.gpt-definition-content');
-          content.textContent = `Error: ${error.message || 'Failed to fetch definition. Please check your API key and connection.'}`;
-        }
+        input.focus();
       }, 2000); // 2 seconds hover delay
     }, 1000); // 1 second selection delay
   }
@@ -232,6 +251,11 @@ function startCloseTimer() {
     closeTimer = setTimeout(() => {
       if (popover) {
         popover.style.display = 'none';
+        // Clear content and input when closing
+        const contentDiv = popover.querySelector('.gpt-definition-content');
+        const input = popover.querySelector('.gpt-prompt-input');
+        if (contentDiv) contentDiv.textContent = '';
+        if (input) input.value = '';
       }
       closeTimer = null;
       
@@ -306,6 +330,11 @@ document.addEventListener('mouseup', handleSelection);
 document.addEventListener('mousedown', () => {
   if (popover) {
     popover.style.display = 'none';
+    // Clear content and input
+    const contentDiv = popover.querySelector('.gpt-definition-content');
+    const input = popover.querySelector('.gpt-prompt-input');
+    if (contentDiv) contentDiv.textContent = '';
+    if (input) input.value = '';
   }
   clearTimeout(hoverTimer);
   clearTimeout(selectionTimer);

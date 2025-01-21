@@ -1,14 +1,15 @@
 .gpt-definition-popover {
   position: absolute;
-  max-width: var(--gpt-max-width, 300px);
-  padding: 12px 16px;
-  border-radius: 8px;
-  font-size: var(--gpt-font-size, 14px);
-  line-height: 1.5;
   z-index: 10000;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: all 0.2s ease-in-out;
-  backdrop-filter: blur(10px);
+  padding: 8px;
+  max-width: 300px;
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 14px;
+  line-height: 1.4;
 }
 
 .gpt-hover-indicator {
@@ -33,8 +34,153 @@
   }
 }
 
+.gpt-input-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  position: relative;
+}
+
+.gpt-prompt-input {
+  flex: 1;
+  padding: 8px 12px;
+  padding-right: 80px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 13px;
+  min-width: 200px;
+}
+
+.gpt-quick-actions {
+  position: absolute;
+  right: 40px;
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 4px;
+  background: transparent;
+}
+
+.gpt-quick-action-btn {
+  background: transparent;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  border-radius: 4px;
+  opacity: 0.7;
+  transition: opacity 0.2s, background-color 0.2s;
+  font-size: 14px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gpt-quick-action-btn:hover {
+  opacity: 1;
+  background-color: #f0f0f0;
+}
+
+.gpt-send-prompt-btn {
+  background: #007AFF;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 14px;
+  min-width: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gpt-send-prompt-btn:hover {
+  background: #0056b3;
+}
+
 .gpt-definition-content {
+  color: #333;
+  font-size: 13px;
+  line-height: 1.5;
   margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #eee;
+}
+
+/* Loading animation */
+.gpt-definition-loading {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 0;
+}
+
+.gpt-definition-loading div {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #333;
+  animation: gpt-loading 0.8s infinite ease-in-out;
+}
+
+.gpt-definition-loading div:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.gpt-definition-loading div:nth-child(2) {
+  animation-delay: -0.16s;
+}
+
+@keyframes gpt-loading {
+  0%, 80%, 100% { transform: scale(0); }
+  40% { transform: scale(1); }
+}
+
+/* Dark mode styles */
+@media (prefers-color-scheme: dark) {
+  .gpt-definition-popover {
+    background: #1c1c1e;
+    border-color: #333;
+    color: #fff;
+  }
+  
+  .gpt-prompt-input {
+    background: #2c2c2e;
+    border-color: #333;
+    color: #fff;
+  }
+  
+  .gpt-quick-action-btn {
+    color: #fff;
+  }
+  
+  .gpt-quick-action-btn:hover {
+    background-color: #2c2c2e;
+  }
+  
+  .gpt-definition-content {
+    color: #fff;
+    border-top-color: #333;
+  }
+  
+  .gpt-definition-loading div {
+    background-color: #e0e0e0;
+  }
+}
+
+.gpt-lang-select {
+  position: absolute;
+  top: 40px;
+  right: 8px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 4px;
+  font-size: 12px;
+  z-index: 10001;
 }
 
 .gpt-definition-toolbar {
@@ -92,34 +238,6 @@
   transform: translateY(-1px);
 }
 
-/* Loading animation */
-.gpt-definition-loading {
-  display: flex;
-  justify-content: center;
-  gap: 6px;
-  padding: 8px 0;
-}
-
-.gpt-definition-loading div {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  animation: gpt-loading 0.8s infinite ease-in-out;
-}
-
-.gpt-definition-loading div:nth-child(1) {
-  animation-delay: -0.32s;
-}
-
-.gpt-definition-loading div:nth-child(2) {
-  animation-delay: -0.16s;
-}
-
-@keyframes gpt-loading {
-  0%, 80%, 100% { transform: scale(0); }
-  40% { transform: scale(1); }
-}
-
 /* Light mode styles */
 .gpt-definition-popover {
   background-color: rgba(255, 255, 255, 0.95);
@@ -143,9 +261,37 @@
 /* Dark mode styles */
 @media (prefers-color-scheme: dark) {
   .gpt-definition-popover {
-    background-color: rgba(45, 45, 45, 0.95);
-    color: #e0e0e0;
-    border: 1px solid #404040;
+    background: #1c1c1e;
+    border-color: #333;
+    color: #fff;
+  }
+  
+  .gpt-quick-actions {
+    border-bottom-color: #333;
+  }
+  
+  .gpt-quick-action-btn {
+    color: #fff;
+  }
+  
+  .gpt-quick-action-btn:hover {
+    background-color: #2c2c2e;
+  }
+  
+  .gpt-prompt-input {
+    background: #2c2c2e;
+    border-color: #333;
+    color: #fff;
+  }
+  
+  .gpt-lang-select {
+    background: #1c1c1e;
+    border-color: #333;
+    color: #fff;
+  }
+  
+  .gpt-definition-content {
+    color: #fff;
   }
   
   .gpt-definition-loading div {

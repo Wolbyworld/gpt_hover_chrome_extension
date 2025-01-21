@@ -1,11 +1,13 @@
 # GPT Definition Helper Chrome Extension
 
-A Chrome extension that provides instant definitions and translations for selected text using OpenAI's GPT-4. Get clear, concise definitions in multiple languages with just a highlight.
+A Chrome extension that provides instant definitions, translations, and AI-powered insights for selected text using OpenAI's GPT-4. Get clear, concise answers with just a highlight.
 
 ## Features
 
-- 🔍 Instant definitions for highlighted text
+- 💭 Custom prompts for any question about selected text
+- 🔍 Quick actions for instant definitions and translations
 - 🌍 Multi-language support (English, Spanish, Portuguese)
+- ⚡️ Fast access with hover activation
 - 📚 Definition history with up to 50 entries
 - 🎨 Customizable appearance settings
 - 🔄 Auto-retry mechanism for API calls
@@ -29,13 +31,16 @@ A Chrome extension that provides instant definitions and translations for select
 ## Usage
 
 1. Highlight any text on a webpage
-2. A small popup will appear with the definition
-3. Click the language icons to get translations
+2. Wait 2 seconds for the input box to appear
+3. Either:
+   - Type your custom question and press Enter
+   - Click 📚 for instant definition
+   - Click 🌐 for quick translation
 4. Access your definition history through the extension popup
 
 ## Technical Details
 
-- Uses OpenAI's GPT-4 API for definitions and translations
+- Uses OpenAI's GPT-4 API for definitions, translations, and custom prompts
 - Built with vanilla JavaScript
 - Implements Chrome Extension Manifest V3
 - Features a retry mechanism for API rate limits
