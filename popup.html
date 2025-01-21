@@ -60,12 +60,43 @@
     .tab-content.active {
       display: block;
     }
+    .domain-list {
+      margin-top: 16px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    .domain-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      margin-bottom: 8px;
+    }
+    .domain-item button {
+      background: #ff4444;
+      width: auto;
+      padding: 4px 8px;
+    }
+    .domain-input-group {
+      display: flex;
+      gap: 8px;
+    }
+    .domain-input-group input {
+      flex: 1;
+    }
+    .domain-input-group button {
+      width: auto;
+      padding: 8px 12px;
+    }
   </style>
 </head>
 <body>
   <div class="tabs">
     <div class="tab active" data-tab="settings">Settings</div>
     <div class="tab" data-tab="appearance">Appearance</div>
+    <div class="tab" data-tab="domains">Excluded Domains</div>
   </div>
   
   <div id="settings" class="tab-content active">
@@ -120,6 +151,19 @@
     </div>
     <button id="saveAppearance">Save Appearance</button>
     <div id="appearanceStatus" class="status"></div>
+  </div>
+  
+  <div id="domains" class="tab-content">
+    <div class="form-group">
+      <label for="domainInput">Add Domain:</label>
+      <div class="domain-input-group">
+        <input type="text" id="domainInput" placeholder="example.com">
+        <button id="addCurrentDomain" title="Add current domain">+</button>
+      </div>
+    </div>
+    <button id="addDomain">Add Domain</button>
+    <div id="domainList" class="domain-list"></div>
+    <div id="domainsStatus" class="status"></div>
   </div>
   
   <script src="popup.js"></script>

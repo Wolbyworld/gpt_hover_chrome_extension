@@ -6,7 +6,8 @@ document.addEventListener('DOMContentLoaded', () => {
   chrome.storage.sync.get([
     'openaiApiKey',
     'defaultLanguage',
-    'appearanceSettings'
+    'appearanceSettings',
+    'excludedDomains'
   ], (result) => {
     document.getElementById('apiKey').value = result.openaiApiKey || '';
     document.getElementById('defaultLanguage').value = result.defaultLanguage || 'en';
@@ -22,6 +23,9 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('maxWidth').value = appearanceSettings.maxWidth;
     document.getElementById('hoverDelay').value = appearanceSettings.hoverDelay;
     document.getElementById('theme').value = appearanceSettings.theme;
+    
+    // Load excluded domains
+    loadExcludedDomains();
   });
   
   // Save settings
@@ -57,6 +61,27 @@ document.addEventListener('DOMContentLoaded', () => {
         status.textContent = '';
       }, 2000);
     });
+  });
+  
+  // Domain exclusion functionality
+  document.getElementById('addDomain').addEventListener('click', async () => {
+    const domainInput = document.getElementById('domainInput');
+    const domain = domainInput.value.trim().toLowerCase();
+    
+    if (domain) {
+      await addExcludedDomain(domain);
+      domainInput.value = '';
+    }
+  });
+
+  document.getElementById('addCurrentDomain').addEventListener('click', async () => {
+    // Get current tab's domain
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (tab?.url) {
+      const domain = new URL(tab.url).hostname;
+      await addExcludedDomain(domain);
+      document.getElementById('domainInput').value = '';
+    }
   });
   
   // Tab switching
@@ -120,4 +145,66 @@ async function loadHistory() {
       btn.textContent = history[index].favorite ? '★' : '☆';
     });
   });
+}
+
+// Function to load excluded domains
+async function loadExcludedDomains() {
+  const { excludedDomains = [] } = await chrome.storage.sync.get(['excludedDomains']);
+  const domainList = document.getElementById('domainList');
+  
+  if (excludedDomains.length === 0) {
+    domainList.innerHTML = '<p>No excluded domains</p>';
+    return;
+  }
+  
+  domainList.innerHTML = excludedDomains
+    .map(domain => `
+      <div class="domain-item">
+        <span>${domain}</span>
+        <button class="remove-domain" data-domain="${domain}">×</button>
+      </div>
+    `)
+    .join('');
+    
+  // Add remove button handlers
+  document.querySelectorAll('.remove-domain').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const domain = btn.dataset.domain;
+      await removeExcludedDomain(domain);
+    });
+  });
+}
+
+// Function to add excluded domain
+async function addExcludedDomain(domain) {
+  const { excludedDomains = [] } = await chrome.storage.sync.get(['excludedDomains']);
+  
+  if (!excludedDomains.includes(domain)) {
+    excludedDomains.push(domain);
+    await chrome.storage.sync.set({ excludedDomains });
+    
+    const status = document.getElementById('domainsStatus');
+    status.textContent = 'Domain added!';
+    setTimeout(() => {
+      status.textContent = '';
+    }, 2000);
+    
+    loadExcludedDomains();
+  }
+}
+
+// Function to remove excluded domain
+async function removeExcludedDomain(domain) {
+  const { excludedDomains = [] } = await chrome.storage.sync.get(['excludedDomains']);
+  
+  const updatedDomains = excludedDomains.filter(d => d !== domain);
+  await chrome.storage.sync.set({ excludedDomains: updatedDomains });
+  
+  const status = document.getElementById('domainsStatus');
+  status.textContent = 'Domain removed!';
+  setTimeout(() => {
+    status.textContent = '';
+  }, 2000);
+  
+  loadExcludedDomains();
 } 

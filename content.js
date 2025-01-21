@@ -216,8 +216,20 @@ function showLoading(popover) {
   content.innerHTML = '<div class="gpt-definition-loading"><div></div><div></div><div></div></div>';
 }
 
+// Check if domain is excluded
+async function isDomainExcluded() {
+  const { excludedDomains = [] } = await chrome.storage.sync.get(['excludedDomains']);
+  const currentDomain = window.location.hostname;
+  return excludedDomains.includes(currentDomain);
+}
+
 // Handle text selection
 async function handleSelection(e) {
+  // Check if domain is excluded
+  if (await isDomainExcluded()) {
+    return;
+  }
+
   const selection = window.getSelection();
   const selectedText = selection.toString().trim();
   

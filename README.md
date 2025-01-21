@@ -10,6 +10,7 @@ A Chrome extension that provides instant definitions, translations, and AI-power
 - ⚡️ Fast access with hover activation
 - 📚 Definition history with up to 50 entries
 - 🎨 Customizable appearance settings
+- 🚫 Domain exclusion for disabling on specific websites
 - 🔄 Auto-retry mechanism for API calls
 - 📱 Responsive popup interface
 
@@ -27,6 +28,10 @@ A Chrome extension that provides instant definitions, translations, and AI-power
 3. Customize the system prompt (optional)
 4. Select your preferred language
 5. Adjust appearance settings as needed
+6. Manage excluded domains:
+   - Go to the "Excluded Domains" tab
+   - Enter domains manually or click "+" to add current website
+   - Remove domains by clicking "×" next to them
 
 ## Usage
 
